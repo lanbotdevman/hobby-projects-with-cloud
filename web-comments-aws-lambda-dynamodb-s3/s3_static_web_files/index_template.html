@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <title>Hello, World!</title>
+</head>
+
+<body class="container text-center justify-content-center">
+    <form id="form-web-comments">
+        <div class="row mt-3">
+            <div class="col">
+                <h1>Hello, World!</h1>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col">
+                <textarea class="w-100" id="form-textarea-content" placeholder="Enter your message here"></textarea>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col">
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col" id="container-user-comments">
+                <!-- Comments will be here -->
+            </div>
+        </div>
+    </form>
+
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+
+    <!-- AWS SDK for JavaScript -->
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.672.0.min.js"></script>
+
+    <script>
+
+        // Initialize the Amazon Cognito credentials provider
+        AWS.config.region = '<## YOUR REGION ID ##>';
+        AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+            IdentityPoolId: '<## YOUR IDENTITY POOL ID ##>',
+        });
+
+        // Define the Amazon Lambda function name
+        var awsLambdaFunctionName = '<## YOUR LAMBDA FUNCTION NAME ##>';
+
+        $(document).ready(function () {
+
+            readCommentsFromServer();
+
+            $('#form-web-comments').submit(function (event) {
+                event.preventDefault();
+                saveNewCommentToServer($('#form-textarea-content').val());
+            });
+        });
+
+        var lambda = new AWS.Lambda();
+
+        function readCommentsFromServer() {
+
+            var params = {
+                FunctionName: awsLambdaFunctionName,
+                Payload: JSON.stringify({
+                    operation: 'getComments' // Direct input into Lambda script
+                })
+            };
+
+            lambda.invoke(params, function (err, data) {
+                if (err) {
+                    console.log(err, err.stack);
+                } else {
+                    console.log(data);
+                    var payload = JSON.parse(data.Payload); // Direct output from Lambda script
+                    payload.comments.forEach(function (comment) {
+                        prependCommentToContainer(comment.timestamp, comment.commentText);
+                    });
+                }
+            });
+        }
+
+        function saveNewCommentToServer(input) {
+
+            var params = {
+                FunctionName: awsLambdaFunctionName,
+                Payload: JSON.stringify({
+                    operation: 'saveComment', // Direct input into Lambda script
+                    commentText: input
+                })
+            };
+
+            lambda.invoke(params, function (err, data) {
+                if (err) {
+                    console.log(err, err.stack);
+                } else {
+                    console.log(data);
+                    prependCommentToContainer(Date.now() / 1000, input);
+                    $('#form-textarea-content').val(''); // Clear text area content
+                }
+            });
+        }
+
+        function prependCommentToContainer(commentTime, commentText) {
+            var formatted = new Date(commentTime * 1000).toLocaleString('en-GB');
+            var newComment = `
+                <div class="card mt-3">
+                    <div class="card-header text-right">
+                        <small class="text-muted">${formatted}</small>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">${commentText}</p>
+                    </div>
+                </div>`;
+
+            $('#container-user-comments').prepend(newComment);
+        }
+
+    </script>
+</body>
+
+</html>

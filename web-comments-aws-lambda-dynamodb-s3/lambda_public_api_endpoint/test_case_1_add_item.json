@@ -1,0 +1,4 @@
+{
+  "operation": "saveComment",
+  "commentText": "Inserting a simple comment directly from Lambda test case"
+}
