@@ -11,6 +11,9 @@ A simple static webpage with ability to save comments into AWS cloud:
    - Using Bootstrap/jQuery template
    - Exposed via S3: Simple Storage Service
 
+Solution overview:
+![Solution overview diagram](https://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/lanbotdevman/hobby-projects-with-cloud/master/web-comments-aws-lambda-dynamodb-s3/solution_overview.puml)
+
 Given instructions are not intended as a complete end-to-end walkthrough, but rather serve the purpose of highlighting key steps for training or presentation activity.
 
 ## DynamoDB to store the web comments
