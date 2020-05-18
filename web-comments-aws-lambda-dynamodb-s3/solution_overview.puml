@@ -1,0 +1,22 @@
+@startuml
+
+left to right direction
+
+node "AWS S3" {
+  [index.html]
+}
+
+node "AWS Lambda" {
+  [Lambda Function]
+}
+
+database "DynamoDB" {
+  [Web Comment Entries]
+}
+
+:User: --> [Web Browser]
+[Web Browser] --> [index.html]
+[Web Browser] --> [Lambda Function]
+[Lambda Function] --> [Web Comment Entries]
+
+@enduml
