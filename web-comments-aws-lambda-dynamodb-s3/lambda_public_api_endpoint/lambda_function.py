@@ -18,11 +18,11 @@ def lambda_handler(event, context):
     if event['operation'] == 'getComments':
         return {'status': 'OK', 'comments': read_items()}
 
-    if event['operation'] == 'saveComment' and 'commentText' in event:
+    if event['operation'] == 'saveComment' and 'commentText' in event and len(event['commentText']) <= 500:
         add_item(event['commentText'])
         return {'status': 'OK'}
 
-    raise ValueError('Incorrect operation parameter or empty commentText')
+    raise ValueError('Incorrect operation parameter or invalid commentText')
 
 
 def add_item(commentText):
